@@ -2,7 +2,7 @@ function plotData(trainSpikeY, lambdaYpredict, spikeYpredict)
     figure(1)
 
     % plot the result
-    t = 0:0.01:15;
+    t = 0:0.01:(length(trainSpikeY) - 1) * 0.01;
     
     subplot(3, 1, 1)
     plot(t, trainSpikeY);
