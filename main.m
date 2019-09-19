@@ -8,7 +8,7 @@ load('trainSet.mat')
 load('testSet.mat')
 
 trainSpikeX = trainSet{1,1}; % get train input
-trainSpikeY = trainSet{1,4}; % get train output(GT) of Sinusoidal
+trainSpikeY = trainSet{1,2}; % get train output(GT) of linear
 
 [Nx, H] = size(trainSet{1,1});
 Nz = 15;
@@ -24,9 +24,9 @@ v = 1e-5;
 
 %% staged point process
 % initialize the params
-w = rand(Nx, H, Nz) - 0.5;
-w0 = rand(1, Nz) - 0.5;
-theta = rand(1, Nz) - 0.5;
+w = 20 * (rand(Nx, H, Nz) - 0.5);
+w0 = 20 * (rand(1, Nz) - 0.5);
+theta = 20 * (rand(1, Nz) - 0.5);
 theta0 = 0; % rand();
 
 % use gradient ascent to maxmium the L
@@ -41,6 +41,7 @@ history = L;
 iteration = 0;
 while(err > threshold)
     G = gradient(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta);  % todo: complete the function
+%     HL = hessian(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta);
     
     % update params
     w = w + v * G.w;

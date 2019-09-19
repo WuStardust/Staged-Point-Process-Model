@@ -1,4 +1,6 @@
 function plotData(trainSpikeY, lambdaYpredict, spikeYpredict)
+    figure(1)
+
     % plot the result
     t = 0:0.01:15;
     

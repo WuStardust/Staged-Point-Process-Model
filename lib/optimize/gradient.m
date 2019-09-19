@@ -6,10 +6,10 @@ function G = gradient(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta)
 
     G.theta0 = sum(trainSpikeY - lambdaYpredict);
 
-    GalmbdZ2w = theta' .* ((trainSpikeY - lambdaYpredict) .* lambdaZ .* (1 - lambdaZ));
+    GlambdZ2w = theta' .* ((trainSpikeY - lambdaYpredict) .* lambdaZ .* (1 - lambdaZ));
     for j = 1:Nz
         for i = 1:Nx
-            convRes = conv(GalmbdZ2w(j, :), flip(trainSpikeX(i, :)));
+            convRes = conv(GlambdZ2w(j, :), flip(trainSpikeX(i, :))); % todo, not clear here
             G.w(i, :, j) = convRes(1:H);
         end
     end
