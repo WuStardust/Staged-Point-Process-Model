@@ -7,13 +7,11 @@ addpath .\lib\optimize
 load('trainSet.mat')
 load('testSet.mat')
 
-trainSet{1,1} = trainSet{1,1}(:, 1:400);
-trainSet{1,2} = trainSet{1,2}(1:400);
-
 trainSpikeX = trainSet{1,1}; % get train input
 trainSpikeY = trainSet{1,2}; % get train output(GT) of linear
 
-[Nx, H] = size(trainSet{1,1});
+[Nx, K] = size(trainSet{1,1});
+H = 10; % todo
 Nz = 15;
 err = 1;
 threshold = 1e-3;
@@ -66,7 +64,8 @@ end
 
 plotData(trainSpikeY, lambdaYpredict, spikeYpredict)
 
-
+output = {lambdaYpredict, spikeYpredict};
+save output.mat output
 
 %% Assessing Goodness-of-fit
 % todo: calculate DBR with spikeYpredict
