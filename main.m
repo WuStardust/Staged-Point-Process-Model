@@ -7,15 +7,17 @@ addpath .\lib\optimize
 load('trainSet.mat')
 load('testSet.mat')
 
-trainSpikeX = trainSet{1,1}; % get train input
-trainSpikeY = trainSet{1,2}; % get train output(GT) of linear
+spikeTrainX = trainSet{1,1}; % get train input
+spikeTrainY = trainSet{1,4}; % get train output(GT) of linear
+lambdaYTrain = trainSet{1,7};
 
 [Nx, K] = size(trainSet{1,1});
-H = 10; % todo
+% set hyperparams
+H = 10; % temporal history, todo
 Nz = 15;
-err = 1;
+u = 0.01;
 threshold = 1e-3;
-v = 1e-5;
+v = 1e-2;
 iterationThres = 7;
 
 %% GLM models
@@ -26,45 +28,60 @@ iterationThres = 7;
 
 %% staged point process
 % initialize the params
-w = 20 * (rand(Nx, H, Nz) - 0.5);
-w0 = 20 * (rand(1, Nz) - 0.5);
-theta = 20 * (rand(1, Nz) - 0.5);
+w = normrnd(0, 1, Nx, H, Nz);
+w0 = normrnd(0, 1, 1, Nz);
+theta = normrnd(0, 1, 1, Nz);
 theta0 = 0; % rand();
 
-[lambdaYpredict, spikeYpredict, lambdaZ] = model(trainSpikeX, w, w0, theta, theta0); % apply the model
-L = logLikelyhood(trainSpikeY, lambdaYpredict); % get L
+% initialize histories
+lambdaYTrainPredict = zeros(1, K);
+spikeTrainYpredict = zeros(1, K);
+lambdaZTrain = zeros(Nz, K);
+LHistory = zeros(1, K);
 
+Lpre = Inf; % initialize Lpre as Inf
+overIterations = 0;
 % use gradient ascent to maxmium the L
-% history = L;
-iterationOverThres = 0;
-while(iterationOverThres < iterationThres)
-    G = gradient(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta); % get Gradient
-%     HL = hessian(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta);
+for K=H:length(spikeTrainY) % K is the number of time bins over the whole observation interval
+    [lambdaYpredict, spikeYpredict, lambdaZ] = model(spikeTrainX(:, K-H+1:K), w, w0, theta, theta0); % apply the model
+    % record the history
+    lambdaYTrainPredict(K) = lambdaYpredict;
+    spikeTrainYpredict(K) = spikeYpredict;
+    lambdaZTrain(:, K) = lambdaZ;
+
+%     if(overIterations > iterationThres)
+%         continue;
+%     end
+
+    L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L todo
+    LHistory(K) = L; % record L
+
+    err = abs(L - Lpre);
+    if (err < threshold)
+        overIterations = overIterations + 1;
+    else
+        overIterations = 0;
+    end
+    Lpre = L;
+
+    G = gradient(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Gradient
+    HL = hessian(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Hessian
 
     % update params
-    w = w + v * G.w;
-    w0 = w0 + v * G.w0;
-    theta = theta + v * G.theta;
-    theta0 = theta0 + v * G.theta0;
+    W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
+    W = W + (1 / (H + u)) * G;
+    w = reshape(W(1:Nx * H * Nz), Nx, H, Nz);
+    w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
+    theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
+    theta0 = W(Nx * H * Nz + Nz + Nz + 1);
 
-    % calculat with new params
-    Lpre = L;
-    [lambdaYpredict, spikeYpredict, lambdaZ] = model(trainSpikeX, w, w0, theta, theta0);
-    L = logLikelyhood(trainSpikeY, lambdaYpredict);
-    err = abs(L - Lpre);
-    
-%     history = [history, L];
-%     figure(2)
-%     plot(history)
-    
-    if (err < threshold)
-        iterationOverThres = iterationOverThres + 1;
-    end
+    figure(2)
+    plot(LHistory)
 end
 
-plotData(trainSpikeY, lambdaYpredict, spikeYpredict)
+plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
 
-output = {lambdaYpredict, spikeYpredict};
+output = {lambdaYTrainPredict, spikeTrainYpredict};
 save output.mat output
 
 %% Assessing Goodness-of-fit

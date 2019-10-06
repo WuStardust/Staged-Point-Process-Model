@@ -1,39 +1,58 @@
-function HL = hessian(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta)
-    [Nx, H] = size(trainSpikeX);
-    [Nz, ~] = size(lambdaZ);
-    
-    %% dL*dL/dtheta*dtheta
-    HL.theta2 = [
-        lambdaZ * diag((1 - lambdaYpredict) .* lambdaYpredict) * lambdaZ', lambdaZ * ((1 - lambdaYpredict) .* lambdaYpredict)'; 
-        (1 - lambdaYpredict) .* lambdaYpredict * lambdaZ', (1 - lambdaYpredict) * lambdaYpredict'
+function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrainX, theta, K, H)
+    [Nx, ~] = size(spikeTrainX);
+    [Nz, ~] = size(lambdaZTrain);
+
+    Hetheta2 = [
+        lambdaZTrain * diag((1 - lambdaYTrainPredict) .* lambdaYTrainPredict) * lambdaZTrain', lambdaZTrain * ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict)'; 
+        (1 - lambdaYTrainPredict) .* lambdaYTrainPredict * lambdaZTrain', (1 - lambdaYTrainPredict) * lambdaYTrainPredict'
     ];
 
-    %% dL*dL/dw*dw
-    X_hat = zeros(Nx, H, H);
-    X_hat_all = repmat(trainSpikeX, [1 1 H]);
-    for i = 1:Nx
-       X_hat(i, :, :) = tril(squeeze(X_hat_all(i, :, :))); % todo: not clear the define of X_hat
-    end
-    X_hat(Nx + 1, :, :) = ones(1, H, H);
-
-    HL.w2 = zeros(Nx + 1, H, Nz, Nx + 1, H, Nz);
-    for i = 1:Nz
-        for j = 1:Nz
-            diagV_part = theta(i) * theta(j) * ...,
-                        (1 - lambdaYpredict) .* lambdaYpredict .* ...,
-                        lambdaZ(i, :) .* (1 - lambdaZ(i, :) .* ...,
-                        lambdaZ(j, :) .* (1 - lambdaZ(j, :)));
-            bias = theta(i) * (trainSpikeY - lambdaYpredict);
-            if(i == j)
-                diagM = diag(diagV_part + bias);
-            else
-                diagM = diag(diagV_part);
-            end
-            HL.w2(:, :, i, :, :, j) = reshape(reshape(X_hat, (Nx + 1) * H, H) * diagM * reshape(X_hat, (Nx + 1) * H, H)', Nx + 1, H, Nx + 1, H);
+    Xhat = zeros(Nx * H + 1, K - H + 1);
+    for h=1:H
+        for i=1:Nx
+            Xhat(Nx * (h - 1) + i, :) = spikeTrainX(i, H-h+1:K-h+1);
         end
     end
-
-    %% 
+    Xhat(Nx * H + 1, :) = ones(1, K - H + 1);
     
-    %%
+    Hew2 = zeros(Nz * (Nx * H + 1));
+    Hewtheta = zeros(Nz + 1, Nz * (Nx * H + 1));
+    for m=1:Nz
+        for n=1:Nz
+            diagVpart = theta(m) * theta(n) * ...,
+                (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
+                lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
+                lambdaZTrain(n, :) .* (1 - lambdaZTrain(n, :));
+            bias = theta(m) * (spikeTrainY - lambdaYTrainPredict) .* ...,
+                (1 - 2 * lambdaZTrain(m, :)) .* lambdaZTrain(m, :);
+
+            wthetaV = theta(m) * ...,
+                (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
+                lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
+                lambdaZTrain(n, :);
+            wthetaBias = (spikeTrainY - lambdaYTrainPredict) .* ...,
+                (1 - lambdaZTrain(m, :)) .* lambdaZTrain(m, :);
+            
+            if(m == n)
+                diagM = diag(diagVpart + bias);
+                wthetaPart = wthetaV;
+            else
+                diagM = diag(diagVpart);
+                wthetaPart = wthetaV + wthetaBias;
+            end
+            Hew2((Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = ...,
+                Xhat * diagM * Xhat';
+
+            Hewtheta(m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = wthetaPart * Xhat';
+        end
+    end
+    
+    for m=1:Nz
+        Hewtheta(Nz + 1, (Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m) = theta(m) * ...,
+            (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
+            lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) * ...,
+            Xhat';
+    end
+    
+    He = [Hew2, Hewtheta'; Hewtheta, Hetheta2];
 end

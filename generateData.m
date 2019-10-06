@@ -6,7 +6,7 @@ function generateData(trainSize, testSize)
     timeBin = 0.01;
     duration = 15;
     t = 0:timeBin:duration;
-    trainSet = cell(trainSize, 4);
+    trainSet = cell(trainSize, 7);
     testSet = cell(testSize, 4);
 
     %% loop for generate
@@ -23,15 +23,18 @@ function generateData(trainSize, testSize)
         % generate spike trains follow the same method as above for several times
         % to construct the train and test set 
         if (i <= trainSize)
-           trainSet{i, 1} = [spikeX1; spikeX2];
-           trainSet{i, 2} = spikeY1;
-           trainSet{i, 3} = spikeY2;
-           trainSet{i, 4} = spikeY3;
+            trainSet{i, 1} = [spikeX1; spikeX2];
+            trainSet{i, 2} = spikeY1;
+            trainSet{i, 3} = spikeY2;
+            trainSet{i, 4} = spikeY3;
+            trainSet{i, 5} = lambdaY1;
+            trainSet{i, 6} = lambdaY2;
+            trainSet{i, 7} = lambdaY3;
         else
-           testSet{i - trainSize, 1} = [spikeX1; spikeX2];
-           testSet{i - trainSize, 2} = spikeY1;
-           testSet{i - trainSize, 3} = spikeY2;
-           testSet{i - trainSize, 4} = spikeY3;
+            testSet{i - trainSize, 1} = [spikeX1; spikeX2];
+            testSet{i - trainSize, 2} = spikeY1;
+            testSet{i - trainSize, 3} = spikeY2;
+            testSet{i - trainSize, 4} = spikeY3;
         end
 
     end

@@ -1,18 +1,17 @@
-function G = gradient(trainSpikeY, lambdaYpredict, lambdaZ, trainSpikeX, theta)
-    [Nx, H] = size(trainSpikeX);
-    [Nz, ~] = size(lambdaZ);
+function G = gradient(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrainX, theta, K, H)
+    [Nx, ~] = size(spikeTrainX);
+    [Nz, ~] = size(lambdaZTrain);
 
-    G.theta = (trainSpikeY - lambdaYpredict) * lambdaZ';
+    Gtheta = (spikeTrainY - lambdaYTrainPredict) * lambdaZTrain';
 
-    G.theta0 = sum(trainSpikeY - lambdaYpredict);
+    Gtheta0 = sum(spikeTrainY - lambdaYTrainPredict);
 
-    GlambdZ2w = theta' .* ((trainSpikeY - lambdaYpredict) .* lambdaZ .* (1 - lambdaZ));
-    for j = 1:Nz
-        for i = 1:Nx
-            convRes = conv(GlambdZ2w(j, :), flip(trainSpikeX(i, :))); % todo, not clear here
-            G.w(i, :, j) = convRes(1:H);
-        end
+    Gw = zeros(Nx, H, Nz);
+    for h=1:H
+        Gw(:, h, :) = spikeTrainX(:, H-h+1:K-h+1) * (theta' .* ((spikeTrainY - lambdaYTrainPredict) .* lambdaZTrain .* (1 - lambdaZTrain)))';
     end
 
-    G.w0 = theta .* sum((trainSpikeY - lambdaYpredict) .* lambdaZ .* (1 - lambdaZ), 2)';
+    Gw0 = theta .* sum((spikeTrainY - lambdaYTrainPredict) .* lambdaZTrain .* (1 - lambdaZTrain), 2)';
+    
+    G = [reshape(Gw, 1, Nx * H * Nz), Gw0, Gtheta, Gtheta0];
 end

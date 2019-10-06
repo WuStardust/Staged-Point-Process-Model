@@ -1,3 +1,3 @@
-function L = logLikelyhood(trainSpikeY, lambdaYpredict)
-    L = trainSpikeY * log(lambdaYpredict') + (1 - trainSpikeY) * log(1 - lambdaYpredict');
+function L = logLikelyhood(spikeTrainY, lambdaYTrainPredict)
+    L = spikeTrainY * log(lambdaYTrainPredict') + (1 - spikeTrainY) * log(1 - lambdaYTrainPredict');
 end
