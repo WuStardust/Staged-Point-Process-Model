@@ -16,7 +16,7 @@ function plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPre
     plot(t, lambdaYTrainPredict);
     xlabel('Time(sec)')
     ylabel('lambdaY3')
-    ylim([0, 1])
+    % ylim([0, 1])
 
     subplot(4, 1, 3)
     plot(t, spikeTrainYpredict);

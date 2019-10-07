@@ -13,11 +13,13 @@ lambdaYTrain = trainSet{1,7};
 
 [Nx, K] = size(trainSet{1,1});
 % set hyperparams
-H = 10; % temporal history, todo
+H = 50; % temporal history
 Nz = 15;
-u = 0.01;
+xi1 = 1;
+xi2 = 5;
+mu = 0.01;
 threshold = 1e-3;
-v = 1e-2;
+% v = 1e-2;
 iterationThres = 7;
 
 %% GLM models
@@ -28,10 +30,10 @@ iterationThres = 7;
 
 %% staged point process
 % initialize the params
-w = normrnd(0, 1, Nx, H, Nz);
-w0 = normrnd(0, 1, 1, Nz);
-theta = normrnd(0, 1, 1, Nz);
-theta0 = 0; % rand();
+w = xi2 / sqrt(H * Nx) * (2 * rand(Nx, H, Nz) - 1);
+w0 = xi2 / sqrt(H * Nx) * (2 * rand(1, Nz) - 1);
+theta = xi1 / sqrt(Nz) * (2 * rand(1, Nz) - 1);
+theta0 = xi1 / sqrt(Nz) * (2 * rand() - 1);
 
 % initialize histories
 lambdaYTrainPredict = zeros(1, K);
@@ -43,6 +45,9 @@ Lpre = Inf; % initialize Lpre as Inf
 overIterations = 0;
 % use gradient ascent to maxmium the L
 for K=H:length(spikeTrainY) % K is the number of time bins over the whole observation interval
+%     history = [];
+%     overIterations = 0;
+%     while(overIterations <= iterationThres)
     [lambdaYpredict, spikeYpredict, lambdaZ] = model(spikeTrainX(:, K-H+1:K), w, w0, theta, theta0); % apply the model
     % record the history
     lambdaYTrainPredict(K) = lambdaYpredict;
@@ -54,8 +59,16 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
 %     end
 
     L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L todo
+    if (isnan(L))
+       msg = 'NaN!'
+       break
+    end
     LHistory(K) = L; % record L
 
+%     history = [history, L];
+%     figure(3)
+%     plot(history)
+    
     err = abs(L - Lpre);
     if (err < threshold)
         overIterations = overIterations + 1;
@@ -69,17 +82,23 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
 
     % update params
     W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
-    W = W + (1 / (H + u)) * G;
+    W = W + (1 / (H + mu)) * G;
     w = reshape(W(1:Nx * H * Nz), Nx, H, Nz);
     w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
     theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
     theta0 = W(Nx * H * Nz + Nz + Nz + 1);
-
+%     end
     figure(2)
     plot(LHistory)
+%     if (isnan(L))
+%        msg = 'NaN!'
+%        break
+%     end
+    
+    plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
 end
 
-plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
+% plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
 
 output = {lambdaYTrainPredict, spikeTrainYpredict};
 save output.mat output
