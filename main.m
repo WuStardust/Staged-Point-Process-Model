@@ -45,20 +45,14 @@ Lpre = Inf; % initialize Lpre as Inf
 overIterations = 0;
 % use gradient ascent to maxmium the L
 for K=H:length(spikeTrainY) % K is the number of time bins over the whole observation interval
-%     history = [];
-%     overIterations = 0;
-%     while(overIterations <= iterationThres)
     [lambdaYpredict, spikeYpredict, lambdaZ] = model(spikeTrainX(:, K-H+1:K), w, w0, theta, theta0); % apply the model
     % record the history
     lambdaYTrainPredict(K) = lambdaYpredict;
     spikeTrainYpredict(K) = spikeYpredict;
     lambdaZTrain(:, K) = lambdaZ;
 
-%     if(overIterations > iterationThres)
-%         continue;
-%     end
 
-    L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L todo
+    L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L
     if (isnan(L))
        msg = 'NaN!'
        break
@@ -68,7 +62,7 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
 %     history = [history, L];
 %     figure(3)
 %     plot(history)
-    
+
     err = abs(L - Lpre);
     if (err < threshold)
         overIterations = overIterations + 1;
@@ -78,11 +72,11 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
     Lpre = L;
 
     G = gradient(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Gradient
-    HL = hessian(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Hessian
+    He = hessian(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Hessian
 
     % update params
     W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
-    W = W + (1 / (H + mu)) * G;
+    W = W + G / (He + mu * eye(size(He)));
     w = reshape(W(1:Nx * H * Nz), Nx, H, Nz);
     w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
     theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);

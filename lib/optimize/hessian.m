@@ -7,7 +7,7 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
         (1 - lambdaYTrainPredict) .* lambdaYTrainPredict * lambdaZTrain', (1 - lambdaYTrainPredict) * lambdaYTrainPredict'
     ];
 
-    Xhat = zeros(Nx * H + 1, K - H + 1);
+    Xhat = zeros(Nx * H + 1, K - H + 1); % todo
     for h=1:H
         for i=1:Nx
             Xhat(Nx * (h - 1) + i, :) = spikeTrainX(i, H-h+1:K-h+1);
@@ -35,10 +35,10 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
             
             if(m == n)
                 diagM = diag(diagVpart + bias);
-                wthetaPart = wthetaV;
+                wthetaPart = wthetaV + wthetaBias;
             else
                 diagM = diag(diagVpart);
-                wthetaPart = wthetaV + wthetaBias;
+                wthetaPart = wthetaV;
             end
             Hew2((Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = ...,
                 Xhat * diagM * Xhat';
@@ -49,8 +49,8 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
     
     for m=1:Nz
         Hewtheta(Nz + 1, (Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m) = theta(m) * ...,
-            (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
-            lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) * ...,
+            ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
+            lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :))) * ...,
             Xhat';
     end
     
