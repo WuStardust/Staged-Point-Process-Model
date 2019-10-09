@@ -51,17 +51,12 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
     spikeTrainYpredict(K) = spikeYpredict;
     lambdaZTrain(:, K) = lambdaZ;
 
-
     L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L
     if (isnan(L))
-       msg = 'NaN!'
+       disp('NaN!');
        break
     end
     LHistory(K) = L; % record L
-
-%     history = [history, L];
-%     figure(3)
-%     plot(history)
 
     err = abs(L - Lpre);
     if (err < threshold)
@@ -81,14 +76,9 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
     w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
     theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
     theta0 = W(Nx * H * Nz + Nz + Nz + 1);
-%     end
+
     figure(2)
     plot(LHistory)
-%     if (isnan(L))
-%        msg = 'NaN!'
-%        break
-%     end
-    
     plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
 end
 
