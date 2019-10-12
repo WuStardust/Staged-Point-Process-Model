@@ -16,9 +16,9 @@ lambdaYTrain = trainSet{1,7};
 H = 50; % temporal history
 Nz = 15;
 xi1 = 1;
-xi2 = 5;
-mu = 0.01;
-threshold = 1e-3;
+xi2 = 10;
+mu = 50; 
+threshold = 1e-1;
 % v = 1e-2;
 iterationThres = 7;
 
@@ -39,25 +39,35 @@ theta0 = xi1 / sqrt(Nz) * (2 * rand() - 1);
 lambdaYTrainPredict = zeros(1, K);
 spikeTrainYpredict = zeros(1, K);
 lambdaZTrain = zeros(Nz, K);
-LHistory = zeros(1, K);
+LHistory = zeros(1, 150);
 
 Lpre = Inf; % initialize Lpre as Inf
 overIterations = 0;
+iteration = 0;
 % use gradient ascent to maxmium the L
-for K=H:length(spikeTrainY) % K is the number of time bins over the whole observation interval
-    [lambdaYpredict, spikeYpredict, lambdaZ] = model(spikeTrainX(:, K-H+1:K), w, w0, theta, theta0); % apply the model
-    % record the history
-    lambdaYTrainPredict(K) = lambdaYpredict;
-    spikeTrainYpredict(K) = spikeYpredict;
-    lambdaZTrain(:, K) = lambdaZ;
+while(overIterations<iterationThres)
+    for K=H:length(spikeTrainY) % K is the number of time bins over the whole observation interval
+        [lambdaYpredict, spikeYpredict, lambdaZ] = model(spikeTrainX(:, K-H+1:K), w, w0, theta, theta0); % apply the model
+        % record the history
+        lambdaYTrainPredict(K) = lambdaYpredict;
+        spikeTrainYpredict(K) = spikeYpredict;
+        lambdaZTrain(:, K) = lambdaZ;
+    end
+    plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
 
     L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L
     if (isnan(L))
        disp('NaN!');
        break
     end
-    LHistory(K) = L; % record L
 
+    iteration = iteration + 1;
+    LHistory(iteration) = L; % record L
+
+    figure(2)
+    subplot(2, 1, 1)
+    plot(LHistory)
+    
     err = abs(L - Lpre);
     if (err < threshold)
         overIterations = overIterations + 1;
@@ -72,14 +82,14 @@ for K=H:length(spikeTrainY) % K is the number of time bins over the whole observ
     % update params
     W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
     W = W + G / (He + mu * eye(size(He)));
+%     W = W + 0.001 * G;
     w = reshape(W(1:Nx * H * Nz), Nx, H, Nz);
     w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
     theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
     theta0 = W(Nx * H * Nz + Nz + Nz + 1);
-
     figure(2)
-    plot(LHistory)
-    plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
+    subplot(2, 1, 2)
+    plot(W)
 end
 
 % plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
