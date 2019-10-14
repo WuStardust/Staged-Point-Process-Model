@@ -22,9 +22,10 @@ lambdaYTrain = lambdaYTrain(1:500);
 
 %% staged point process
 % train
+tic
 [spikeTrainYpredict, lambdaYTrainPredict, LHistory, W] = stagedPointProcess(spikeTrainX, spikeTrainY, Nx, K);
 plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
-
+toc
 
 %% Assessing Goodness-of-fit
 % todo: calculate DBR with spikeYpredict
