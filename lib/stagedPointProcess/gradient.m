@@ -12,6 +12,6 @@ function G = gradient(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
     end
 
     Gw0 = theta .* sum((spikeTrainY - lambdaYTrainPredict) .* lambdaZTrain .* (1 - lambdaZTrain), 2)';
-    
+
     G = [reshape(Gw, 1, Nx * H * Nz), Gw0, Gtheta, Gtheta0];
 end
