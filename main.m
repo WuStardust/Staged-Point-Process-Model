@@ -15,9 +15,9 @@ lambdaYTrain = trainSet{1,7};
 % set hyperparams
 H = 50; % temporal history
 Nz = 15;
-xi1 = 1;
+xi1 = 5;
 xi2 = 10;
-mu = 50; 
+mu = 0.1;
 threshold = 1e-1;
 % v = 1e-2;
 iterationThres = 7;
@@ -34,6 +34,7 @@ w = xi2 / sqrt(H * Nx) * (2 * rand(Nx, H, Nz) - 1);
 w0 = xi2 / sqrt(H * Nx) * (2 * rand(1, Nz) - 1);
 theta = xi1 / sqrt(Nz) * (2 * rand(1, Nz) - 1);
 theta0 = xi1 / sqrt(Nz) * (2 * rand() - 1);
+W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
 
 % initialize histories
 lambdaYTrainPredict = zeros(1, K);
@@ -67,6 +68,8 @@ while(overIterations<iterationThres)
     figure(2)
     subplot(2, 1, 1)
     plot(LHistory)
+    subplot(2, 1, 2)
+    plot(W)
     
     err = abs(L - Lpre);
     if (err < threshold)
@@ -79,6 +82,9 @@ while(overIterations<iterationThres)
     G = gradient(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Gradient
     He = hessian(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), spikeTrainX(:, 1:K), theta, K, H); % get Hessian
 
+    figure(3); subplot(2, 1, 1); plot(G)
+    figure(3); subplot(2, 1, 2); colormap([1 1 0; 1 0 0; 1 0 1; 0 0 1; 0 1 0]); mesh(1:length(He), 1:length(He), He)
+    
     % update params
     W = [reshape(w, 1, Nx * H * Nz), w0, theta, theta0];
     W = W + G / (He + mu * eye(size(He)));
@@ -87,9 +93,6 @@ while(overIterations<iterationThres)
     w0 = W(Nx * H * Nz + 1: Nx * H * Nz + Nz);
     theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
     theta0 = W(Nx * H * Nz + Nz + Nz + 1);
-    figure(2)
-    subplot(2, 1, 2)
-    plot(W)
 end
 
 % plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict)
