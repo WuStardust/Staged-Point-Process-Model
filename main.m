@@ -9,9 +9,9 @@ load('testSet.mat')
 spikeTrainX = trainSet{1,1}; % get train input
 spikeTrainY = trainSet{1,4}; % get train output(GT) of linear
 lambdaYTrain = trainSet{1,7};
-spikeTrainX = spikeTrainX(1:500);
-spikeTrainY = spikeTrainY(1:500);
-lambdaYTrain = lambdaYTrain(1:500);
+spikeTrainX = spikeTrainX(1:1000);
+spikeTrainY = spikeTrainY(1:1000);
+lambdaYTrain = lambdaYTrain(1:1000);
 [Nx, K] = size(spikeTrainX);
 
 %% GLM models
@@ -21,11 +21,28 @@ lambdaYTrain = lambdaYTrain(1:500);
 % need todo
 
 %% staged point process
-% train
-tic
-[spikeTrainYpredict, lambdaYTrainPredict, LHistory, W] = stagedPointProcess(spikeTrainX, spikeTrainY, Nx, K);
-plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
-toc
+Result = cell(1, 30);
+for i=1:1
+    % train
+    tic
+    [spikeTrainYpredict, lambdaYTrainPredict, LHistory, W] = stagedPointProcess(spikeTrainX, spikeTrainY, Nx, K);
+    plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
+    Result{i} = {spikeTrainYpredict, lambdaYTrainPredict, LHistory, W};
+    toc
+%     figure(1)
+%     subplot(5, 6, i)
+%     plot(Result{i}{1})
+%     figure(2)
+%     subplot(5, 6, i)
+%     plot(Result{i}{2})
+%     figure(3)
+%     subplot(5, 6, i)
+%     plot(Result{i}{3})
+%     figure(4)
+%     subplot(5, 6, i)
+%     plot(Result{i}{4})
+%     drawnow
+end
 
 %% Assessing Goodness-of-fit
 % todo: calculate DBR with spikeYpredict

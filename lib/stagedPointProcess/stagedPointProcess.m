@@ -1,11 +1,10 @@
 function [spikeTrainYpredict, lambdaYTrainPredict, LHistory, W] = stagedPointProcess(spikeTrainX, spikeTrainY, Nx, K)
-
 %% get hyperparams
 [H, Nz, xi1, xi2, mu, threshold, iterationThres] = hyperParams();
 
 %% initialize the params
 [w, w0, theta, theta0, W] = initialParams(H, Nx, Nz, xi1, xi2);
-maxIterations = 20;
+maxIterations = 30;
 
 %% initialize histories
 LHistory = zeros(1, maxIterations);
@@ -21,7 +20,7 @@ for iteration=1:maxIterations
 
     [Lpre, overIterations, LHistory] = evaluate(spikeTrainY, lambdaYTrainPredict, LHistory, iteration, Lpre, overIterations, threshold, H, K);
 
-    % plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
+    plotData(spikeTrainY, spikeTrainY, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
 
     [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrainX, mu, theta, W, K, H);
 end
