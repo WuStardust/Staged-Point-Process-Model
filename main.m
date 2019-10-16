@@ -9,9 +9,6 @@ load('testSet.mat')
 spikeTrainX = trainSet{1,1}; % get train input
 spikeTrainY = trainSet{1,4}; % get train output(GT) of linear
 lambdaYTrain = trainSet{1,7};
-spikeTrainX = spikeTrainX(1:1000);
-spikeTrainY = spikeTrainY(1:1000);
-lambdaYTrain = lambdaYTrain(1:1000);
 [Nx, K] = size(spikeTrainX);
 
 %% GLM models
