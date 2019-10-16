@@ -25,4 +25,6 @@ function plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPre
     plot(LHistory)
     subplot(2, 1, 2)
     plot(W)
+
+    drawnow
 end

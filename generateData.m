@@ -4,7 +4,7 @@ function generateData(trainSize, testSize)
 
     %% const variables
     timeBin = 0.01;
-    duration = 15;
+    duration = 120;
     t = 0:timeBin:duration;
     trainSet = cell(trainSize, 7);
     testSet = cell(testSize, 4);
