@@ -2,8 +2,8 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
     [Nx, ~] = size(spikeTrainX);
     [Nz, ~] = size(lambdaZTrain);
 
-    Hetheta2 = [
-        lambdaZTrain * diag((1 - lambdaYTrainPredict) .* lambdaYTrainPredict) * lambdaZTrain', lambdaZTrain * ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict)'; 
+    Hetheta2 = -[
+        ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict) .* lambdaZTrain * lambdaZTrain', lambdaZTrain * ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict)'; 
         (1 - lambdaYTrainPredict) .* lambdaYTrainPredict * lambdaZTrain', (1 - lambdaYTrainPredict) * lambdaYTrainPredict'
     ];
 
@@ -20,14 +20,14 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
     Hewtheta = zeros(Nz + 1, Nz * (Nx * H + 1));
     for m=1:Nz
         for n=1:Nz
-            diagVpart = sparse(theta(m) * theta(n) * ...,
+            diagVpart = - sparse(theta(m) * theta(n) * ...,
                 (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
                 lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
                 lambdaZTrain(n, :) .* (1 - lambdaZTrain(n, :)));
             bias = sparse(theta(m) * (spikeTrainY - lambdaYTrainPredict) .* ...,
                 (1 - 2 * lambdaZTrain(m, :)) .* lambdaZTrain(m, :));
 
-            wthetaV = sparse(theta(m) * ...,
+            wthetaV = - sparse(theta(m) * ...,
                 (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
                 lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
                 lambdaZTrain(n, :));
@@ -49,7 +49,7 @@ function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrain
     end
 
     for m=1:Nz
-        Hewtheta(Nz + 1, (Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m) = theta(m) * ...,
+        Hewtheta(Nz + 1, (Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m) = - theta(m) * ...,
             ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
             lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :))) * ...,
             Xhat';

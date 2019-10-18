@@ -20,7 +20,7 @@ for iteration=1:maxIterations
 
     [Lpre, overIterations, LHistory] = evaluate(spikeTrainY, lambdaYTrainPredict, LHistory, iteration, Lpre, overIterations, threshold, H, K);
 
-%     plotData(spikeTrainY, spikeTrainY, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
+    % plotData(spikeTrainY, spikeTrainY, spikeTrainYpredict, lambdaYTrainPredict, LHistory, W)
 
     [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrainX, mu, theta, W, K, H);
 end

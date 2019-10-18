@@ -10,7 +10,7 @@ function [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, la
 %   figure(3); subplot(3, 1, 3); plot(G / (He + mu * eye(size(He))))
 
   % update params
-  W = W + G / (He + mu * eye(size(He)));
+  W = W + G / ( - He + mu * eye(size(He)));
   ww0 = reshape(W(1:(Nx*H+1) * Nz), Nx*H+1, Nz);
   w = reshape(ww0(1:Nx*H, :), Nx, H, Nz);
   w0 = ww0(Nx*H+1, :);
