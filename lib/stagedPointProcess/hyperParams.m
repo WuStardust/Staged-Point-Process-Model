@@ -1,6 +1,6 @@
 function [H, Nz, xi1, xi2, mu, threshold, iterationThres] = hyperParams()
-  H = 50; % temporal history
-  Nz = 15;
+  H = 3; % temporal history
+  Nz = 2;
   xi1 = 1;
   xi2 = 5;
   mu = 0.01;
