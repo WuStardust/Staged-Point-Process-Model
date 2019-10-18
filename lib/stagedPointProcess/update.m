@@ -17,7 +17,7 @@ function [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, la
   % update params
   W = W + 0.001 * He(m, :);% / ( - He + mu * eye(size(He)));
      end
-     delta = Ghistory(2:10) - Ghistory(1:9);
+     delta = (Ghistory(2:10) - Ghistory(1:9)) > 0;
      disp([num2str(m), 'xxxxxx', num2str(delta)])
   end
 end
