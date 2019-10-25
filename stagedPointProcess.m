@@ -35,6 +35,8 @@ Xhat = sparse(Xhat);
 %% initialize the params
 [w, w0, theta, theta0, W] = initialParams(H, Nx, Nz, xi1, xi2);
 % load('linearW2.mat')
+Whistory = zeros(10 ,length(W));
+Whistory = [W; Whistory(2:10, :)];
 maxIterations = 100;
 
 %% initialize histories
@@ -55,6 +57,7 @@ for iteration=1:maxIterations
     plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
     % update params
     [w, w0, theta, theta0, W] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, theta, W, Nx, H, normW, alpha);
+    Whistory = [W; Whistory(2:10, :)];
     [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = predict(H, K, spikeTrainX, w, w0, theta, theta0);
 end
 
