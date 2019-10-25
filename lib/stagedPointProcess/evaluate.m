@@ -1,5 +1,5 @@
-function [Lpre, overIterations, LHistory] = evaluate(spikeTrainY, lambdaYTrainPredict, LHistory, iteration, Lpre, overIterations, threshold, H, K)
-  L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K)); % get L
+function [Lpre, overIterations, LHistory] = evaluate(spikeTrainY, lambdaYTrainPredict, LHistory, iteration, Lpre, overIterations, threshold, H, K, normW, alpha)
+  L = logLikelyhood(spikeTrainY(H:K), lambdaYTrainPredict(H:K), normW, alpha); % get L
   LHistory(iteration) = L; % record L
 
   err = abs(L - Lpre);

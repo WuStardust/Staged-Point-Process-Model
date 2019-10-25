@@ -1,59 +1,32 @@
-function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, spikeTrainX, theta, K, H)
-    [Nx, ~] = size(spikeTrainX);
+function He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, theta, Nx, H)
     [Nz, ~] = size(lambdaZTrain);
 
-    Hetheta2 = -[
-        ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict) .* lambdaZTrain * lambdaZTrain', lambdaZTrain * ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict)'; 
-        (1 - lambdaYTrainPredict) .* lambdaYTrainPredict * lambdaZTrain', (1 - lambdaYTrainPredict) * lambdaYTrainPredict'
-    ];
+    lambdaYTrainPredictProduct = sparse((1 - lambdaYTrainPredict) .* lambdaYTrainPredict);
 
-    Xhat = zeros(Nx * H + 1, K - H + 1); % todo
-    for h=1:H
-        for i=1:Nx
-            Xhat(Nx * (h - 1) + i, :) = spikeTrainX(i, H-h+1:K-h+1);
-        end
-    end
-    Xhat(Nx * H + 1, :) = ones(1, K - H + 1);
-    Xhat = sparse(Xhat);
+    Hetheta2 = -[
+        lambdaZTrain * diag(lambdaYTrainPredictProduct) * lambdaZTrain', lambdaZTrain * lambdaYTrainPredictProduct'; 
+        lambdaYTrainPredictProduct * lambdaZTrain', sum(lambdaYTrainPredictProduct)
+    ];
 
     Hew2 = zeros(Nz * (Nx * H + 1));
     Hewtheta = zeros(Nz + 1, Nz * (Nx * H + 1));
+
+    LambdaZProduct = sparse(lambdaZTrain .* (1 - lambdaZTrain));
+    thetaLambdaZProduct = sparse(theta' .* LambdaZProduct);
+    thetaYZProduct = sparse(lambdaYTrainPredictProduct .* thetaLambdaZProduct);
+    dSpikeLambdaY = sparse(spikeTrainY - lambdaYTrainPredict);
+
+    bias = sparse(theta' .* dSpikeLambdaY .* (1 - 2 * lambdaZTrain) .* lambdaZTrain);
+    wthetaBias = sparse(dSpikeLambdaY .* LambdaZProduct);
+    biasM = eye(Nz);
     for m=1:Nz
+        diagV = - sparse(thetaYZProduct(m, :) .* thetaLambdaZProduct + biasM(:, m) .* bias);
         for n=1:Nz
-            diagVpart = - sparse(theta(m) * theta(n) * ...,
-                (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
-                lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
-                lambdaZTrain(n, :) .* (1 - lambdaZTrain(n, :)));
-            bias = sparse(theta(m) * (spikeTrainY - lambdaYTrainPredict) .* ...,
-                (1 - 2 * lambdaZTrain(m, :)) .* lambdaZTrain(m, :));
-
-            wthetaV = - sparse(theta(m) * ...,
-                (1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
-                lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :)) .* ...,
-                lambdaZTrain(n, :));
-            wthetaBias = sparse((spikeTrainY - lambdaYTrainPredict) .* ...,
-                (1 - lambdaZTrain(m, :)) .* lambdaZTrain(m, :));
-
-            if(m == n)
-                diagM = diag(diagVpart + bias);
-                wthetaPart = wthetaV + wthetaBias;
-            else
-                diagM = diag(diagVpart);
-                wthetaPart = wthetaV;
-            end
-            Hew2((Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = ...,
-                Xhat * diagM * Xhat';
-
-            Hewtheta(m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = wthetaPart * Xhat';
+            Hew2((Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m, (Nx * H + 1) * (n-1) + 1:(Nx * H + 1) * n) = Xhat * sparse(diag(diagV(n, :))) * Xhat';
         end
+        Hewtheta(m, :) = reshape(((- thetaYZProduct(m, :) .* lambdaZTrain + biasM(:, m) .* wthetaBias) * Xhat')', 1, Nz * (Nx * H + 1));
     end
-
-    for m=1:Nz
-        Hewtheta(Nz + 1, (Nx * H + 1) * (m-1) + 1:(Nx * H + 1) * m) = - theta(m) * ...,
-            ((1 - lambdaYTrainPredict) .* lambdaYTrainPredict .* ...,
-            lambdaZTrain(m, :) .* (1 - lambdaZTrain(m, :))) * ...,
-            Xhat';
-    end
+    Hewtheta(Nz+1, :) = reshape((- thetaYZProduct * Xhat')', 1, Nz * (Nx * H + 1));
 
     He = [Hew2, Hewtheta'; Hewtheta, Hetheta2];
 end
