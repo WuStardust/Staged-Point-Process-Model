@@ -10,5 +10,5 @@ function lambdaZ = firstLayer(spikeX, w, w0)
 %     end
 
 %     lambdaZ = sigmaFunc(squeeze(sum(convRes)) + w0)';
-    lambdaZ = sigmaFunc(squeeze(sum(sum(spikeX .* fliplr(w)))) + w0');
+    lambdaZ = sigmaFunc((squeeze(sum(sum(spikeX .* (100 * fliplr(w))))) + 100 * w0') / 100);
 end
