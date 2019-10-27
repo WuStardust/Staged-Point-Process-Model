@@ -8,17 +8,17 @@ addpath .\lib\utils
 load('input.mat')
 load('output.mat')
 spikeTrainX = input{1};
-spikeTrainY = outputY{1,1};
-lambdaYTrain = outputLambda{1,1};
+spikeTrainY = outputY{3,1};
+lambdaYTrain = outputLambda{3,1};
 [Nx, K] = size(spikeTrainX);
 
 spikeTrainXvalidate = input{2};
-spikeTrainYvalidate = outputY{1,2};
-lambdaYValidate = outputLambda{1,2};
+spikeTrainYvalidate = outputY{3,2};
+lambdaYValidate = outputLambda{3,2};
 
 spikeTrainXtest = input{3};
-spikeTrainYtest = outputY{1,3};
-lambdaYTest = outputLambda{1,3};
+spikeTrainYtest = outputY{3,3};
+lambdaYTest = outputLambda{3,3};
 
 %% get hyperparams
 [H, Wh, xi, threshold, iterationThres, maxIterations, alpha] = hyperParams();
