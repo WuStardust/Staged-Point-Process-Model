@@ -1,8 +1,9 @@
 clear
 
 %% load data and import functions
-addpath .\lib\generateSpikes
+path(pathdef)
 addpath .\lib\stagedPointProcess
+addpath .\lib\utils
 
 load('input.mat')
 load('output.mat')
@@ -59,10 +60,10 @@ overIterations = 0;
 %% Train the model
 [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = predict(H, K, spikeTrainX, w, w0, theta, theta0);
 for iteration=1:maxIterations
-    normW = norm(W, 2);
+    normW = alpha * 0.5 * norm(W, 2)^2;
     % validate
     [lambdaYTrainPredictValidate, spikeTrainYpredictValidate, ~] = predict(H, length(spikeTrainXvalidate), spikeTrainXvalidate, w, w0, theta, theta0);
-    [L, overIterations, LHistory, isIncrease] = evaluate(spikeTrainYvalidate, lambdaYTrainPredictValidate, LHistory, iteration, L, overIterations, threshold, H, length(spikeTrainXvalidate), normW, alpha);
+    [L, overIterations, LHistory, isIncrease] = evaluate(spikeTrainYvalidate, lambdaYTrainPredictValidate, LHistory, iteration, L, overIterations, threshold, H, length(spikeTrainXvalidate), normW);
     if (overIterations > iterationThres)
         break;
     end

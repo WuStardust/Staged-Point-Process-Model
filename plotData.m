@@ -5,20 +5,20 @@ function plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPre
     
     subplot(4, 1, 1)
     plot(t, spikeTrainY);
-    title('output spike train')
+    title('spikeY Ground Truth')
 
     subplot(4, 1, 2)
     plot(t, lambdaYTrain);
-    title('output lambda')
+    title('lambdaY Ground Truth')
 
     subplot(4, 1, 4);
     plot(t, lambdaYTrainPredict);
     xlabel('Time(sec)')
-    ylabel('lambdaY3')
+    ylabel('lambdaY Predict')
 
     subplot(4, 1, 3)
     plot(t, spikeTrainYpredict);
-    title('model output spike train')
+    title('spikeY predict')
 
     figure(2)
     subplot(2, 1, 1)
