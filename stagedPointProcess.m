@@ -73,7 +73,7 @@ for iteration=1:maxIterations
     else
       mu = 10*mu;
     end
-    [w, w0, theta, theta0, W] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, theta, W, Nx, H, normW, alpha);
+    [w, w0, theta, theta0, W] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, theta, W, Nx, H, alpha);
     [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = predict(H, K, spikeTrainX, w, w0, theta, theta0);
     fprintf('#')
     if (L < -2e4)

@@ -1,4 +1,4 @@
-function [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, mu, theta, W, Nx, H, normW, alpha)
+function [w, w0, theta, theta0, W] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, mu, theta, W, Nx, alpha)
   [Nz, ~] = size(lambdaZTrain);
 
   % W0 = W;
