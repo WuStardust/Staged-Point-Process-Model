@@ -1,5 +1,6 @@
 %% import libs
 addpath .\lib\generateSpikes
+addpath .\lib\utils
 
 %% const variables
 timeBin = 0.01;
