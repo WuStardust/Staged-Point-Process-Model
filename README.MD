@@ -6,5 +6,5 @@ Simulation for paper *Nonlinear Modeling of Neural Interaction for Spike Predict
 * l2 norm / weight decay
 * Pre-train
 * Metrics: DBR
-* GLM/2nd order GLM
+* 2nd order GLM
 * Trained model
