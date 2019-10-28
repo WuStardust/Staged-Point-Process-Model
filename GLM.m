@@ -7,23 +7,27 @@ addpath .\lib\utils
 
 load('input.mat')
 load('output.mat')
+
+M = containers.Map({'linear', 'quadratic', 'sin'}, [1, 2, 3]);
+transType = M('linear');
+
 spikeTrainX = input{1};
-spikeTrainY = outputY{3,1};
-lambdaYTrain = outputLambda{3,1};
-[Nx, K] = size(spikeTrainX);
+spikeTrainY = outputY{transType,1};
+lambdaYTrain = outputLambda{transType,1};
 
 spikeTrainXvalidate = input{2};
-spikeTrainYvalidate = outputY{3,2};
-lambdaYValidate = outputLambda{3,2};
+spikeTrainYvalidate = outputY{transType,2};
+lambdaYValidate = outputLambda{transType,2};
 
 spikeTrainXtest = input{3};
-spikeTrainYtest = outputY{3,3};
-lambdaYTest = outputLambda{3,3};
+spikeTrainYtest = outputY{transType,3};
+lambdaYTest = outputLambda{transType,3};
 
 %% get hyperparams
 [H, Wh, xi, threshold, iterationThres, maxIterations, alpha] = hyperParams();
 
 %% get Xhat
+[Nx, K] = size(spikeTrainX);
 Xhat = zeros(Nx * H + 1, K - H + 1); % todo
 for h=1:H
     for i=1:Nx
@@ -62,4 +66,4 @@ end
 
 %% test
 [lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(spikeTrainXtest, W);
-plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, [], [])
+plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, LHistory, W)
