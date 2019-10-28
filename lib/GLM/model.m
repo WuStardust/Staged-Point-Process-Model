@@ -5,16 +5,12 @@ function [lambdaYpredict, spikeYpredict] = model(spikeTrainX, W)
 %
 % Calculate GLM predict output
 
-  [Nx, K] = size(spikeTrainX);
+  [Nx, ~] = size(spikeTrainX);
   H = (length(W) - 1) / Nx;
 
-  Xhis = zeros(Nx, H+1, K);
-  for k=H:K
-    Xhis(:, :, k) = [spikeTrainX(:, k-H+1:k), ones(Nx, 1)];
-  end
+  w = flipud(reshape(W(1:Nx*H), Nx, H));
+  w0 = W(Nx*H+1);
 
-  w = [fliplr(reshape(W(1:Nx*H), Nx, H)), W(Nx*H+1)/Nx * ones(Nx, 1)];
-
-  lambdaYpredict = sigmaFunc(squeeze(sum(sum(Xhis .* w)))');
+  lambdaYpredict = sigmaFunc([zeros(1, H-1), conv2(spikeTrainX, w, 'valid') + w0]);
   spikeYpredict = lambda2Spike(lambdaYpredict);
 end
