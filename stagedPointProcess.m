@@ -50,7 +50,8 @@ w0 = ww0(Nx*H+1, :);
 theta = W(Nx * H * Nz + Nz + 1:Nx * H * Nz + Nz + Nz);
 theta0 = W(Nx * H * Nz + Nz + Nz + 1);
 % mu = Goodmu(pre);
-maxIterations = 1;
+mu = 1;
+maxIterations = 300;
 
 %% initialize histories
 LHistory = zeros(1, maxIterations);
@@ -67,7 +68,7 @@ for iteration=1:maxIterations
     if (overIterations > iterationThres)
         break;
     end
-    plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
+%     plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
     % update params
     if (isIncrease)
       mu = mu/10;
@@ -76,9 +77,11 @@ for iteration=1:maxIterations
     end
     [w, w0, theta, theta0, W] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, theta, W, Nx, H, alpha);
     [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = predict(H, K, spikeTrainX, w, w0, theta, theta0);
-    fprintf('#')
+    if (mod(iteration, 20) == 0)
+      fprintf('#')
+    end
     if (L < -2e4)
-       break; 
+      break;
     end
 end
 Whistory(pre, :) = W;
@@ -89,7 +92,7 @@ fprintf('  pretrain %2d Completed.\n', pre);
 % [lambdaYTrainPredictTest, spikeTrainYpredicTest, ~] = predict(H, length(spikeTrainXtest), spikeTrainXtest, w, w0, theta, theta0);
 % plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, [], [])
 
-figure(fix((pre-1)/5) + 3)
+figure(fix((pre-1)/5)+1)
 subplot(5, 1, mod(pre-1, 5)+1)
 t = 0:0.01:(length(lambdaYTrainPredictValidate) - 1) * 0.01;
 plot(t, lambdaYTrainPredictValidate);
