@@ -2,7 +2,7 @@ clear
 
 %% load data and import functions
 path(pathdef)
-addpath .\lib\GLM
+addpath .\lib\GLM2order
 addpath .\lib\utils
 
 load('input.mat')
@@ -26,18 +26,13 @@ lambdaYTest = outputLambda{transType,3};
 %% get hyperparams
 [H, Wh, xi, threshold, iterationThres, maxIterations, alpha] = hyperParams();
 
-%% get Xhat
-[Nx, K] = size(spikeTrainX);
-Xhat = zeros(Nx * H + 1, K - H + 1);
-for h=1:H
-    for i=1:Nx
-        Xhat(Nx * (h - 1) + i, :) = spikeTrainX(i, H-h+1:K-h+1);
-    end
-end
-Xhat(Nx * H + 1, :) = ones(1, K - H + 1);
-Xhat = sparse(Xhat);
+%% get Xhat, XcovHat
+Xall = getXall(spikeTrainX, H);
+XallValidate = getXall(spikeTrainXvalidate, H);
+XallTest = getXall(spikeTrainXtest, H);
 
 %% initialize the params
+[Nx, K] = size(spikeTrainX);
 W = initialParams(H, Nx, xi);
 
 %% history variables
@@ -49,13 +44,13 @@ overIterations = 0;
 %% Train the model
 for iteration=1:maxIterations
   % update params
-  [lambdaYTrainPredict, spikeTrainYpredict] = model(spikeTrainX, W);
-  W = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), Xhat, W, alpha);
+  [lambdaYTrainPredict, spikeTrainYpredict] = model(Xall, W, H);
+  W = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), Xall, W, alpha);
   Whistory = [Whistory(2:Wh, :); W];
 
   normW = alpha * norm(W, 1);
   % validate
-  [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(spikeTrainXvalidate, W);
+  [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XallValidate, W, H);
   [L, overIterations] = evaluate(spikeTrainYvalidate, lambdaYTrainPredictValidate, L, overIterations, threshold, normW);
   LHistory(iteration:length(LHistory)) = L; % record L
   if (overIterations > iterationThres)
@@ -65,5 +60,5 @@ for iteration=1:maxIterations
 end
 
 %% test
-[lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(spikeTrainXtest, W);
+[lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(XallTest, W, H);
 plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, LHistory, W)
