@@ -5,11 +5,11 @@ path(pathdef)
 addpath .\lib\GLM2order
 addpath .\lib\utils
 
-load('input.mat')
-load('output.mat')
+load('inputS.mat')
+load('outputS.mat')
 
 M = containers.Map({'linear', 'quadratic', 'sin'}, [1, 2, 3]);
-transType = M('linear');
+transType = M('sin');
 
 spikeTrainX = input{1};
 spikeTrainY = outputY{transType,1};

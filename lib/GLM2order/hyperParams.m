@@ -5,5 +5,5 @@ function [H, Wh, xi, threshold, iterationThres, maxIterations, alpha] = hyperPar
   threshold = 1e-2;
   iterationThres = 7;
   maxIterations = 20;
-  alpha = 0; % to do
+  alpha = 0;
 end
