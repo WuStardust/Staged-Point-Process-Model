@@ -6,7 +6,5 @@ function [W, G, He] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xha
   He = hessian(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, theta, Nx, H); % get Hessian
 
   % update params
-  a = zeros(1, 13);
-  a(11) = 0.0001;
   W = W + (G - alpha * W) / ( - He + (mu + alpha) * eye(size(He)));
 end

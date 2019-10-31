@@ -1,5 +1,5 @@
 function [preTrainN, H, Nz, xi1, xi2, mu, threshold, iterationThres, maxIterations, alpha] = hyperParams()
-  preTrainN = 20;
+  preTrainN = 50;
   H = 50; % temporal history
   Nz = 15;
   xi1 = 1;

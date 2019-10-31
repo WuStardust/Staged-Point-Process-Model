@@ -38,11 +38,13 @@ XhatTest = getXhat(spikeTrainXtest, H);
 Whistory = zeros(preTrainN, Nx*H*Nz+Nz+Nz+1);
 PreLhistory = zeros(1 ,preTrainN);
 % muHistory = zeros(1 ,preTrainN);
+mu0 = mu;
 for pre=1:preTrainN
     %% initialize the params
     W = initialParams(H, Nx, Nz, xi1, xi2);
     % W = GoodW(pre, :);
     % mu = Goodmu(pre);
+    mu = mu0;
 
     %% initialize histories
     LHistory = zeros(1, maxIterations+1);
