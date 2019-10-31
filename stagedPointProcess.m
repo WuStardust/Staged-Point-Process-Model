@@ -56,28 +56,30 @@ for pre=1:preTrainN
     for iteration=1:maxIterations
         % update params
         [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = model(Xhat, W, H, Nx, Nz);
-        [W, G, He] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, W, Nx, H, alpha);
-
+        [W, bad] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, W, Nx, H, alpha);
+        if (bad)
+          break;
+        end
         normW = alpha * 0.5 * norm(W, 2)^2;
         % validate
         [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XhatValidate, W, H, Nx, Nz);
         [L, overIterations] = evaluate(spikeTrainYvalidate, lambdaYTrainPredictValidate, L, overIterations, threshold, normW);
         LHistory(iteration+1:length(LHistory)) = L; % record L
         if (overIterations > iterationThres)
-        break;
+          break;
         end
-        plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
+%         plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
 
         if (L > LHistory(iteration))
-        mu = mu/10;
+          mu = mu/10;
         else
-        mu = 10*mu;
+          mu = 10*mu;
         end
 
         if (mod(iteration, 5) == 0)
           fprintf('#')
         end
-        if (L < -1e5)
+        if (L < -2.5e4)
           break;
         end
     end
@@ -87,13 +89,14 @@ for pre=1:preTrainN
     % muHistory(pre) = mu;
     fprintf('  pretrain %2d Completed.\n', pre);
     %% Test
-    [lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(XhatTest, W, H, Nx, Nz);
-    plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, [], [])
+%     [lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(XhatTest, W, H, Nx, Nz);
+%     plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, [], [])
 
     figure(fix((pre-1)/5)+1)
     subplot(5, 1, mod(pre-1, 5)+1)
     t = 0:0.01:(length(lambdaYTrainPredictValidate) - 1) * 0.01;
     plot(t, lambdaYTrainPredictValidate);
+    drawnow
 end
 
 %% calculate DBR
