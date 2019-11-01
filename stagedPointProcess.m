@@ -33,7 +33,7 @@ XhatValidate = getXhat(spikeTrainXvalidate, H);
 XhatTest = getXhat(spikeTrainXtest, H);
 
 %%
-% load GoodW.mat
+% load goodW.mat
 % load Goodmu.mat
 Whistory = zeros(preTrainN, Nx*H*Nz+Nz+Nz+1);
 PreLhistory = zeros(1 ,preTrainN);
@@ -41,45 +41,70 @@ PreLhistory = zeros(1 ,preTrainN);
 mu0 = mu;
 for pre=1:preTrainN
     %% initialize the params
-    W = initialParams(H, Nx, Nz, xi1, xi2);
-    % W = GoodW(pre, :);
+%     if (pre > size(goodW, 1))
+      W = initialParams(H, Nx, Nz, xi1, xi2);
+      mu = mu0;
+%     else
+%       W = goodW(pre, :);
+%       mu = 1;
+%     end
     % mu = Goodmu(pre);
-    mu = mu0;
 
     %% initialize histories
     LHistory = zeros(1, maxIterations+1);
-    L = -Inf; % initialize Lpre as -Inf
-    LHistory(1) = L;
+    [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XhatValidate, W, H, Nx, Nz);
+    L = logLikelyhood(spikeTrainYvalidate, lambdaYTrainPredictValidate, alpha * 0.5 * norm(W, 2)^2); % get L
+    iteration = 1;
+    LHistory(iteration) = L;
     overIterations = 0;
 
     %% Train the model
-    for iteration=1:maxIterations
+    for i=1:maxIterations
+        if (mod(iteration, 3) == 0)
+          fprintf('#')
+        end
         % update params
         [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = model(Xhat, W, H, Nx, Nz);
-        [W, bad] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, W, Nx, H, alpha);
+        [Wnew, bad] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, W, Nx, H, alpha);
         if (bad)
+          fprintf('bad condition. ')
           break;
         end
         normW = alpha * 0.5 * norm(W, 2)^2;
         % validate
-        [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XhatValidate, W, H, Nx, Nz);
-        [L, overIterations] = evaluate(spikeTrainYvalidate, lambdaYTrainPredictValidate, L, overIterations, threshold, normW);
-        LHistory(iteration+1:length(LHistory)) = L; % record L
+        [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XhatValidate, Wnew, H, Nx, Nz);
+        L = logLikelyhood(spikeTrainYvalidate, lambdaYTrainPredictValidate, normW); % get L
+
+        % update fail, multiply mu and re-update
+        if (L <= LHistory(iteration) - 30 && mu <= 1e7)
+          mu = mu * 1000;
+          continue;
+        end
+
+        iteration = iteration + 1;
+        LHistory(iteration:length(LHistory)) = L; % record L
+        plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, Wnew)
+%         plotData(spikeTrainY, lambdaYTrain, spikeTrainYpredict, lambdaYTrainPredict, LHistory, Wnew)
+        % update overIterations
+        if (L - LHistory(iteration-1) < threshold)
+          overIterations = overIterations + 1;
+        else
+          overIterations = 0;
+        end
+        % check iter condition
         if (overIterations > iterationThres)
+          fprintf('Converge. ')
           break;
         end
-%         plotData(spikeTrainYvalidate, lambdaYValidate, spikeTrainYpredictValidate, lambdaYTrainPredictValidate, LHistory, W)
 
-        if (L > LHistory(iteration))
-          mu = mu/10;
-        else
-          mu = 10*mu;
+        % update mu & W
+        W = Wnew;
+        if (L > LHistory(iteration-1) - 30 && mu > 1e-7)
+          mu = mu/100;
         end
 
-        if (mod(iteration, 5) == 0)
-          fprintf('#')
-        end
-        if (L < -2.5e4)
+        if (max(W) > 100)
+          fprintf('Large W. ')
           break;
         end
     end
@@ -92,7 +117,7 @@ for pre=1:preTrainN
 %     [lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(XhatTest, W, H, Nx, Nz);
 %     plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, [], [])
 
-    figure(fix((pre-1)/5)+1)
+    figure(fix((pre-1)/5)+3)
     subplot(5, 1, mod(pre-1, 5)+1)
     t = 0:0.01:(length(lambdaYTrainPredictValidate) - 1) * 0.01;
     plot(t, lambdaYTrainPredictValidate);

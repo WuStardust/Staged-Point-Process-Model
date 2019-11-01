@@ -12,5 +12,5 @@ function [W, bad] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat,
       bad = 1;
       return;
   end
-  W = W + (G - alpha * W) / ( - He + (mu + alpha) * eye(size(He)));
+  W = W + (G - alpha * W) / He2;
 end
