@@ -67,3 +67,5 @@ end
 %% test
 [lambdaYTrainPredictTest, spikeTrainYpredicTest] = model(spikeTrainXtest, W);
 plotData(spikeTrainYtest, lambdaYTest, spikeTrainYpredicTest, lambdaYTrainPredictTest, LHistory, W)
+DBR = dbr(lambdaYTrainPredictTest, spikeTrainYtest);
+disp(['Test result: DBR: ', num2str(DBR)])
