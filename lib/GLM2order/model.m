@@ -5,6 +5,6 @@ function [lambdaYpredict, spikeYpredict] = model(Xall, W, H)
 %
 % Calculate GLM predict output
 
-  lambdaYpredict = sigmaFunc([zeros(1, H-1), W * Xall]);
+  lambdaYpredict = [zeros(1, H-1), sigmaFunc(W * Xall)];
   spikeYpredict = lambda2Spike(lambdaYpredict);
 end
