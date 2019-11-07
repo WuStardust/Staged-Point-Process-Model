@@ -5,3 +5,5 @@
 *.fig
 !results/*.mat
 !results/*.fig
+!results/*/*.mat
+!results/*/*.fig

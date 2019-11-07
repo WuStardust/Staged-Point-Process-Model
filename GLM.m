@@ -95,3 +95,6 @@ disp(['Test result: DBR: ', num2str(DBRresults(:, 11)')])
 
 plotResults(results)
 save('results\new\GLMResults.mat', 'results', 'DBRresults')
+saveas(1, 'results\new\GLM1.fig')
+saveas(2, 'results\new\GLM2.fig')
+saveas(3, 'results\new\GLM3.fig')
