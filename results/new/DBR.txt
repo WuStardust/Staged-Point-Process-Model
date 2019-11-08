@@ -4,3 +4,5 @@ Test result: DBR: 1.1156      4.8979      4.4437
 GLM2order
 Test result: DBR: 2.1529       3.263      4.7032
 
+stagedPointProcess
+Test result: DBR: 0.98571       2.726      3.8958
