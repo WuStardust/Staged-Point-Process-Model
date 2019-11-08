@@ -4,7 +4,7 @@ function [preTrainN, H, Nz, xi1, xi2, mu, threshold, iterationThres, maxIteratio
   Nz = 15;
   xi1 = 10;
   xi2 = 10;
-  mu = 100;
+  mu = 0.01;
   threshold = 1e-3;
   iterationThres = 7;
   maxIterations = 300;
