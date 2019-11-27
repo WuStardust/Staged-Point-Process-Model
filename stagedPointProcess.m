@@ -13,8 +13,8 @@ bestDBR = [Inf, Inf, Inf];
 bestDataset = zeros(1, 3);
 results = cell(3, 6);
 
-for sample = 1:10
-  for transType=1:3
+for sample = 1:1
+  for transType=3:3
     complete = 0;
     while(~complete)
     spikeTrainX = input{sample, 1};
@@ -62,6 +62,7 @@ for sample = 1:10
         overIterations = 0;
 
         %% Train the model
+        Whistory = zeros(ceil(maxIterations/5), Nx*H*Nz+Nz+Nz+1);
         for i=1:maxIterations
           if (mod(iteration, 3) == 0)
             fprintf('#')
@@ -107,6 +108,17 @@ for sample = 1:10
 
           LtrainPre = Ltrain;
           
+          figure(1)
+          subplot(2, 1, 1)
+          plot(LHistory)
+          subplot(2, 1, 2)
+          plot(W)
+          figure(ceil((iteration-1)/25)+1)
+          subplot(5, 1, ceil(mod(iteration-1, 25)/5))
+          t = 0:0.01:(length(spikeTrainYvalidate) - 1) * 0.01;
+          plot(t, lambdaYTrainPredictValidate);
+          Whistory(ceil((iteration-1)/5), :) = W;
+
           if (max(W) > 50)
             fprintf('Large W. ')
             bad = 1;

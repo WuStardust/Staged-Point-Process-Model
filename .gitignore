@@ -7,3 +7,5 @@
 !results/*.fig
 !results/*/*.mat
 !results/*/*.fig
+!inputS.mat
+!outputS.mat
