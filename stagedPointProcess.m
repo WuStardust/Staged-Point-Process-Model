@@ -55,6 +55,8 @@ for sample = 1:10
         LHistory = zeros(1, maxIterations+1);
         [lambdaYTrainPredictValidate, spikeTrainYpredictValidate] = model(XhatValidate, W, H, Nx, Nz);
         L = logLikelyhood(spikeTrainYvalidate, lambdaYTrainPredictValidate, alpha * 0.5 * norm(W, 2)^2); % get L
+        [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = model(Xhat, W, H, Nx, Nz);
+        LtrainPre = logLikelyhood(spikeTrainYpredict, lambdaYTrainPredict, alpha * 0.5 * norm(W, 2)^2); % get L on train
         iteration = 1;
         LHistory(iteration) = L;
         overIterations = 0;
@@ -66,6 +68,7 @@ for sample = 1:10
           end
           % update params
           [lambdaYTrainPredict, spikeTrainYpredict, lambdaZTrain] = model(Xhat, W, H, Nx, Nz);
+          Ltrain = logLikelyhood(spikeTrainYpredict, lambdaYTrainPredict, alpha * 0.5 * norm(W, 2)^2); % get L on train
           [Wnew, bad] = update(spikeTrainY(H:K), lambdaYTrainPredict(H:K), lambdaZTrain(:, H:K), Xhat, mu, W, Nx, H, alpha);
           if (bad)
             fprintf('bad condition. ')
@@ -77,7 +80,7 @@ for sample = 1:10
           L = logLikelyhood(spikeTrainYvalidate, lambdaYTrainPredictValidate, normW); % get L
 
           % update fail, multiply mu and re-update
-          if (L <= LHistory(iteration) && mu <= 1e7)
+          if (Ltrain <= LtrainPre && mu <= 1e7)
             mu = mu * 10;
             continue;
           end
@@ -98,10 +101,12 @@ for sample = 1:10
 
           % update mu & W
           W = Wnew;
-          if (L > LHistory(iteration-1) && mu > 1e-7)
+          if (Ltrain > LtrainPre && mu > 1e-7)
             mu = mu/10;
           end
 
+          LtrainPre = Ltrain;
+          
           if (max(W) > 50)
             fprintf('Large W. ')
             bad = 1;
