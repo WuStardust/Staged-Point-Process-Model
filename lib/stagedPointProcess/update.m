@@ -8,7 +8,7 @@ function [W, bad] = update(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat,
   % update params
   He2 = - He + (mu + alpha) * eye(size(He));
   bad = 0;
-  if (rcond(He2) < 1e-15)
+  if ((rcond(He2) < 1e-15) + (isnan(He2)))
       bad = 1;
       return;
   end
