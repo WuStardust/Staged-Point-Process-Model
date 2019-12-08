@@ -16,7 +16,7 @@ function [DBR, y] = dbr(p, spikes)
     % distance
     B = sort(y);
     D = max(abs(B' - (1/length(y):1/length(y):1)));
-    DBR = D / 1.36 * sqrt(length(y));
+    DBR = D / 1.36 * sqrt(sum(y));
 
-    plotDBR(y)
+%     plotDBR(y)
 end

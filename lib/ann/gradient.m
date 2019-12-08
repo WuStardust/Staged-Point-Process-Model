@@ -1,20 +1,17 @@
-function G = gradient(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, theta, Nx, H)
+function G = gradient(spikeTrainY, lambdaYTrainPredict, lambdaZTrain, Xhat, theta)
     [Nz, ~] = size(lambdaZTrain);
+    [XhatN, trainL] = size(Xhat);
 
     dSpikeLambdaY = spikeTrainY - lambdaYTrainPredict;
     dSpikeLambdaYZProduct = dSpikeLambdaY .* lambdaZTrain .* (1 - lambdaZTrain);
     thetaDProdcut = (theta' .* dSpikeLambdaYZProduct)';
 
-    Gtheta = dSpikeLambdaY * lambdaZTrain';
+    Gtheta = dSpikeLambdaY * [lambdaZTrain', ones(trainL, 1)];
 
-    Gtheta0 = sum(dSpikeLambdaY);
-
-    Gw = zeros(Nx, H, Nz);
-    for h=1:H
-        Gw(:, h, :) = Xhat(Nx*(h-1)+1:Nx*h, :) * thetaDProdcut;
+    Gw = zeros(1, XhatN*Nz);
+    for h=1:Nz
+        Gw((h-1)*XhatN+1:h*XhatN) = (Xhat * thetaDProdcut(:, h))';
     end
 
-    Gw0 = theta .* sum(dSpikeLambdaYZProduct, 2)';
-
-    G = [reshape([reshape(Gw, Nx*H, Nz); Gw0], 1, (Nx*H+1)*Nz), Gtheta, Gtheta0];
+    G = [Gw, Gtheta];
 end

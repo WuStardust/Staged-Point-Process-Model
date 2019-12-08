@@ -7,5 +7,5 @@ function Xhat = getXhat(spikeTrainX, H)
         end
     end
     Xhat(Nx * H + 1, :) = ones(1, K - H + 1);
-    Xhat = sparse(Xhat);
+    Xhat = double(Xhat);
   end
