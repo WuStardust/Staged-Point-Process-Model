@@ -121,7 +121,7 @@ while(iter<maxiter)
   figure(1)
   subplot(5,1,1);plot(LtrainHis(2:iter))
   subplot(5,1,2);plot(LvalHis(2:iter))
-  subplot(5,1,3);plot(W(iter,:))
+  subplot(5,1,3);histogram(W(iter,:))
   subplot(5,1,4);plot(lambdaYVal)
   subplot(5,1,5);plot(lambdaYValidate)
   drawnow
